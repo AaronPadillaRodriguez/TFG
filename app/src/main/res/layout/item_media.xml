@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/ivPortada"
+            android:layout_width="150dp"
+            android:layout_height="225dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.012"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.085"
+            tools:srcCompat="@tools:sample/avatars" />
+
+
+        <ProgressBar
+            android:id="@+id/pbNota"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/shadow_background"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="100"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/ivPortada"
+            app:layout_constraintHorizontal_bias="0.03"
+            app:layout_constraintStart_toStartOf="@+id/ivPortada"
+            app:layout_constraintTop_toTopOf="@+id/ivPortada"
+            app:layout_constraintVertical_bias="0.73" />
+
+        <TextView
+            android:id="@+id/tvNota"
+            android:layout_width="27dp"
+            android:layout_height="20dp"
+            android:background="@drawable/shadow_background"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            app:layout_constraintBottom_toBottomOf="@+id/pbNota"
+            app:layout_constraintEnd_toEndOf="@+id/pbNota"
+            app:layout_constraintStart_toStartOf="@+id/pbNota"
+            app:layout_constraintTop_toTopOf="@+id/pbNota"
+            tools:text="100%" />
+
+        <TextView
+            android:id="@+id/tvNombre"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="35dp"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivPortada"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="Nombre reducido" />
+
+        <TextView
+            android:id="@+id/tvFechaEstreno"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="@color/grey"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.062"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvNombre"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="Fecha" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
+

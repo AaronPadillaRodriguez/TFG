@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "934553158979",
+    "firebase_url": "https://holausuario-68de325d-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "holausuario-68de325d",
+    "storage_bucket": "holausuario-68de325d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934553158979:android:f2f64926295f1ea24b1bf6",
+        "android_client_info": {
+          "package_name": "com.example.tfg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBsqpyUjIleMUKlJwAdls5dfAYDrCTGVAQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

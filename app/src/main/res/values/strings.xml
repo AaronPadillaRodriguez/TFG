@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">TFG</string>
+    <string name="lo_m_s_popular">Lo más popular</string>
+    <string name="tendencias">Tendencias</string>
+    <string name="ver_gratis">Ver Gratis</string>
+    <string-array name="Tendencias">
+        <item>Hoy</item>
+        <item>Esta semana</item>
+    </string-array>
+    <string-array name="Popular">
+        <item>Retransmisión</item>
+        <item>En televisión</item>
+        <item>En alquiler</item>
+        <item>En cines</item>
+    </string-array>
+    <string-array name="Gratis">
+        <item>Películas</item>
+        <item>Televisión</item>
+    </string-array>
+</resources>

@@ -1,7 +1,7 @@
 [versions]
 agp = "8.6.1"
 firebaseAuthKtx = "23.2.0"
-firebaseBom = "33.12.0"
+firebaseBom = "33.13.0"
 kotlin = "2.1.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -18,6 +18,8 @@ kotlinxCoroutinesAndroid = "1.10.2"
 core = "1.16.0"
 recyclerview = "1.4.0"
 comGoogleGmsGoogleServicesGradlePlugin = "4.4.2"
+playServicesBase = "18.7.0"
+picassoTransformations = "2.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,8 +41,10 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 com-google-gms-google-services-gradle-plugin = { group = "com.google.gms.google-services", name = "com.google.gms.google-services.gradle.plugin", version.ref = "comGoogleGmsGoogleServicesGradlePlugin" }
+picasso-transformations = { group = "jp.wasabeef", name = "picasso-transformations", version.ref = "picassoTransformations" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
 

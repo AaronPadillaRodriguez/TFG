@@ -1,18 +1,21 @@
 package com.example.tfg.model.api
 
+import com.example.tfg.BuildConfig
 import com.example.tfg.model.dataclass.ApiResponse
+import com.example.tfg.model.dataclass.Pelicula
+import com.example.tfg.model.dataclass.TvShow
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-private const val apiKey = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwOGQ3Nzg3YmFjODVhNWIzZjMwZjA2ZDYzMTlkNTI2NCIsIm5iZiI6MTc0MTYyNDA0Mi4zMjgsInN1YiI6IjY3Y2YxMmVhNzVjOWYxYmQxMmUzMWJlMiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.oPC9xpGiBVpxK4S0DJLL0pDj9rAZbokxxgNFLA3l_uA"
+private val apiKey = if (BuildConfig.API_KEY_TMDB.isNotBlank()) {
+    "Bearer ${BuildConfig.API_KEY_TMDB}"
+} else {
+    throw IllegalStateException("API_KEY_TMDB is not set in local.properties")
+}
 
 interface APImedia {
-
-    /**
-     * --------------- Se puede mejorar ---------------
-     */
 
     //-------------------Utilizado en Trending-------------------
     //Trending
@@ -73,4 +76,19 @@ interface APImedia {
         @Query("with_watch_monetization_types") monetizationType: String = "free",
         @Header("Authorization") token: String = apiKey
     ): ApiResponse
+
+    //-------------------Utilizado en Detalles-------------------
+    @GET("movie/{media_id}")
+    suspend fun getMovieDetails(
+        @Path("media_id") movieId: Int,
+        @Query("language") language: String,
+        @Header("Authorization") token: String = apiKey
+    ): Pelicula
+
+    @GET("tv/{media_id}")
+    suspend fun getTvDetails(
+        @Path("media_id") tvId: Int,
+        @Query("language") language: String,
+        @Header("Authorization") token: String = apiKey
+    ): TvShow
 }

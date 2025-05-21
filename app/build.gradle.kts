@@ -1,7 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.google.services) apply true
+}
+
+// Método alternativo más simple sin usar Properties ni FileUtils
+val localPropertiesFile = rootProject.file("local.properties")
+val apiKey = if (localPropertiesFile.exists()) {
+    localPropertiesFile.readLines()
+        .firstOrNull { it.startsWith("API_KEY_TMDB=") }
+        ?.substringAfter("API_KEY_TMDB=")
+        ?: ""
+} else {
+    ""
 }
 
 android {
@@ -16,6 +27,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Usar la API key cargada
+        buildConfigField(
+            "String",
+            "API_KEY_TMDB",
+            "\"$apiKey\""
+        )
+
+        // Para debug
+        println("API Key loaded: ${if (apiKey.isNotEmpty()) "YES (length: ${apiKey.length})" else "NO - EMPTY"}")
     }
 
     buildTypes {
@@ -37,6 +58,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -46,18 +68,19 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.com.google.gms.google.services.gradle.plugin)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
     implementation(libs.picasso)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.core)
     implementation(libs.androidx.recyclerview)
+    implementation(libs.picasso.transformations)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

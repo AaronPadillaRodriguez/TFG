@@ -4,6 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <!--Barra superior que contiene el menu,
+    la cuenta del usuario y el buscador-->
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -63,6 +67,9 @@
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!--ScrollView que contiene tres layouts,
+     tendencias, pepulares y gratis-->
+
     <ScrollView
         android:id="@+id/main"
         android:layout_width="match_parent"
@@ -73,7 +80,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
-            tools:context=".MainActivity">
+            tools:context=".view.MainActivity">
 
             <include
                 android:id="@+id/Tendencias"

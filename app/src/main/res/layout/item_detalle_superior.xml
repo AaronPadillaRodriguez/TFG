@@ -6,16 +6,18 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp">
 
+    <!--Item que contiene los datos segun el tipo de media-->
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-
         <ImageView
             android:id="@+id/ivFondo"
-            android:layout_width="327dp"
+            android:layout_width="355dp"
             android:layout_height="256dp"
+            android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
@@ -24,16 +26,26 @@
             app:layout_constraintVertical_bias="0.0"
             tools:src="@tools:sample/backgrounds/scenic" />
 
+        <View
+            android:id="@+id/bottom_gradient"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/fade_left_gradient"
+            app:layout_constraintBottom_toBottomOf="@+id/ivFondo"
+            app:layout_constraintEnd_toEndOf="@+id/ivFondo"
+            app:layout_constraintStart_toStartOf="@+id/ivFondo"
+            app:layout_constraintTop_toTopOf="@+id/ivFondo" />
+
         <ImageView
             android:id="@+id/ivPoster"
-            android:layout_width="150dp"
+            android:layout_width="155dp"
             android:layout_height="225dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.061"
+            app:layout_constraintHorizontal_bias="0.062"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.031"
+            app:layout_constraintVertical_bias="0.072"
             tools:src="@tools:sample/avatars" />
 
         <ProgressBar
@@ -46,17 +58,17 @@
             android:indeterminate="false"
             android:max="100"
             android:progress="100"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/title_container"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/ivPoster"
             app:layout_constraintTop_toTopOf="@+id/ivPoster"
-            app:layout_constraintVertical_bias="0.601" />
+            app:layout_constraintVertical_bias="0.975" />
 
         <TextView
             android:id="@+id/tvNota"
-            android:layout_width="27dp"
-            android:layout_height="20dp"
+            android:layout_width="22dp"
+            android:layout_height="17dp"
             android:background="@drawable/shadow_background"
             android:gravity="center"
             android:textColor="@color/white"
@@ -67,60 +79,69 @@
             app:layout_constraintTop_toTopOf="@+id/pbNota"
             tools:text="100%" />
 
-        <TextView
-            android:id="@+id/ivTitulo"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/title_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            app:layout_constraintWidth_max="250dp"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.492"
+            app:layout_constraintTop_toBottomOf="@+id/ivFondo"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivFondo"
-            app:layout_constraintVertical_bias="0.0"
-            tools:text="Titulo" />
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/ivFechaAnio"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#595959"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/ivTitulo"
-            app:layout_constraintTop_toBottomOf="@+id/ivFondo"
-            app:layout_constraintVertical_bias="0.122"
-            app:layout_constraintWidth_max="250dp"
-            tools:text="(Anio)" />
+            <!-- Título (con autoajuste y límite de ancho) -->
+            <TextView
+                android:id="@+id/tvTitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:maxWidth="320dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Misión: Imposible - Sentencia final" />
+
+            <!-- Año (se ajusta dinámicamente) -->
+            <TextView
+                android:id="@+id/tvFechaAnio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#595959"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginStart="2dp"
+                app:layout_constraintStart_toEndOf="@id/tvTitulo"
+                app:layout_constraintTop_toTopOf="@id/tvTitulo"
+                app:layout_constraintBottom_toBottomOf="@id/tvTitulo"
+                tools:text="(2025)" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/tvDatos"
-            android:layout_width="340dp"
+            android:layout_width="360dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_marginTop="10dp"
             android:gravity="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.492"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivTitulo"
+            app:layout_constraintTop_toBottomOf="@+id/title_container"
             app:layout_constraintVertical_bias="0.0"
             tools:text="Datos varios" />
 
         <TextView
             android:id="@+id/tvTagline"
-            android:layout_width="340dp"
-            android:layout_height="wrap_content"
+            android:layout_width="360dp"
+            android:layout_height="28sp"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:gravity="center_vertical"
             android:textColor="#595959"
+            android:textStyle="bold|italic"
+            android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.492"
@@ -130,8 +151,22 @@
             tools:text="Tag line" />
 
         <TextView
+            android:id="@+id/tvVistaGeneral"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:text="Vista General"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="48dp"
+            app:layout_constraintBottom_toTopOf="@+id/tvResumen"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvDatos"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
             android:id="@+id/tvResumen"
-            android:layout_width="340dp"
+            android:layout_width="360dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
@@ -140,8 +175,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.492"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvTagline"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintTop_toBottomOf="@+id/tvVistaGeneral"
+            app:layout_constraintVertical_bias="1.0"
             tools:text="Resumen" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

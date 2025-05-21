@@ -6,10 +6,12 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp">
 
+    <!--Item que contiene los datos segun el tipo de media-->
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="wrap_content"
-        android:layout_height="350dp"
+        android:layout_height="370dp"
         android:padding="8dp">
 
         <ImageView
@@ -33,16 +35,17 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_marginTop="200dp"
             android:background="@drawable/shadow_background"
             android:indeterminate="false"
             android:max="100"
             android:progress="100"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/tvNombre"
             app:layout_constraintEnd_toEndOf="@+id/ivPortada"
-            app:layout_constraintHorizontal_bias="0.03"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/ivPortada"
             app:layout_constraintTop_toTopOf="@+id/ivPortada"
-            app:layout_constraintVertical_bias="0.73" />
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/tvNota"

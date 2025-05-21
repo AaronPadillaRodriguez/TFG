@@ -1,4 +1,4 @@
-Trabajo de fin de curso centrado en la peticion a la API de TMDB
+Trabajo de fin de curso centrado en peticiones a la API de TMDB
 
 Objetivos:
 

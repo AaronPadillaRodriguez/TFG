@@ -15,11 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * Clase encargada de mostrar contenido multimedia gratuito según la categoría seleccionada.
- * Permite filtrar entre películas gratuitas y programas de televisión gratuitos.
- *
- * @property context Contexto de la aplicación necesario para acceder a recursos y servicios.
- * @property b Binding de la actividad principal que contiene las referencias a las vistas.
+ * Clase que maneja la visualizacion de contenido multimedia gratuito.
+ * Permite filtrar entre peliculas y programas de TV gratuitos mediante un Spinner.
  */
 class Gratis(private val context: Context, private val b: ActivityMainBinding) {
     /**
@@ -28,14 +25,14 @@ class Gratis(private val context: Context, private val b: ActivityMainBinding) {
     private lateinit var mediaAdapter: MediaAdapter
 
     /**
-     * Categoría actualmente seleccionada para filtrar el contenido gratuito.
-     * Por defecto, se establece en películas gratuitas.
+     * Categoria actualmente seleccionada para filtrar el contenido gratuito.
+     * Por defecto, se establece en peliculas gratuitas.
      */
     private var currentCategory = OpcionesSpinner.GRATIS_PELICULAS.texto
 
     /**
-     * Bloque de inicialización que se ejecuta al crear una instancia de la clase.
-     * Lanza una corrutina en un hilo de IO para inicializar las vistas y cargar los datos.
+     * Inicializa el componente y comienza la carga de datos.
+     * Configura el Spinner y RecyclerView en un hilo secundario.
      */
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -46,8 +43,8 @@ class Gratis(private val context: Context, private val b: ActivityMainBinding) {
     }
 
     /**
-     * Inicializa el spinner con las opciones de categorías de contenido gratuito
-     * y configura su listener para detectar cambios de selección.
+     * Configura el Spinner con opciones de filtrado.
+     * Establece el listener para detectar cambios de seleccion.
      */
     private fun initSpinner() {
         val adapter = ArrayAdapter(context,
@@ -60,11 +57,11 @@ class Gratis(private val context: Context, private val b: ActivityMainBinding) {
         b.Gratis.spGratis.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             /**
              * Se ejecuta cuando se selecciona un nuevo elemento en el spinner.
-             * Actualiza la categoría actual y recarga el contenido gratuito.
+             * Actualiza la categoria actual y recarga el contenido gratuito.
              *
-             * @param parent El AdapterView donde se realizó la selección.
+             * @param parent El AdapterView donde se realizo la seleccion.
              * @param view La vista dentro del AdapterView que fue seleccionada.
-             * @param position La posición del elemento seleccionado en el adaptador.
+             * @param position La posicion del elemento seleccionado en el adaptador.
              * @param id El ID de fila del elemento seleccionado.
              */
             override fun onItemSelected(
@@ -82,18 +79,18 @@ class Gratis(private val context: Context, private val b: ActivityMainBinding) {
             }
 
             /**
-             * Se ejecuta cuando no hay ninguna selección en el spinner.
-             * Método vacío ya que siempre habrá una opción seleccionada.
+             * Se ejecuta cuando no hay ninguna seleccion en el spinner.
+             * Metodo vacio ya que siempre habra una opcion seleccionada.
              *
-             * @param parent El AdapterView que ahora no contiene ninguna selección.
+             * @param parent El AdapterView que ahora no contiene ninguna seleccion.
              */
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
     /**
-     * Inicializa el RecyclerView que muestra los elementos multimedia gratuitos.
-     * Configura el adaptador con un listener para manejar clics en los elementos.
+     * Inicializa el RecyclerView para mostrar el contenido.
+     * Configura un layout horizontal y el adaptador de medios.
      */
     private fun initRecyclerView() {
         val recyclerView = b.Gratis.rvGratis
@@ -108,8 +105,8 @@ class Gratis(private val context: Context, private val b: ActivityMainBinding) {
     }
 
     /**
-     * Carga el contenido multimedia gratuito según la categoría seleccionada.
-     * Utiliza la función fetchMedia para obtener los datos de la API.
+     * Carga el contenido gratuito segun la categoria seleccionada.
+     * Usa la API para obtener los datos y los muestra aleatoriamente.
      */
     private fun cargarGratis() {
         fetchMedia(context, mediaAdapter, { api -> api.getGratis(currentCategory) }, shuffle = true)

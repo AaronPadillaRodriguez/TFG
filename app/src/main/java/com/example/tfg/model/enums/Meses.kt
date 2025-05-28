@@ -1,14 +1,11 @@
 package com.example.tfg.model.enums
 
 /**
- * Enumeración que representa los meses del año.
+ * Enumeracion de meses del año con utilidades de conversion.
  *
- * Esta clase enum proporciona una representación estructurada de los doce meses del año
- * con sus respectivos números ordinales, abreviaturas y nombres completos.
- *
- * @property numMes Número ordinal del mes (1-12).
- * @property abreviatura Representación abreviada del nombre del mes (3 caracteres).
- * @property completo Nombre completo del mes en español.
+ * @property numMes Numero del mes (1-12)
+ * @property abreviatura Abreviatura de 3 letras (ej: "Ene")
+ * @property completo Nombre completo del mes
  */
 enum class Meses (val numMes: Int, val abreviatura: String, val completo: String) {
     ENERO(1, "Ene", "Enero"),
@@ -26,11 +23,10 @@ enum class Meses (val numMes: Int, val abreviatura: String, val completo: String
 
     companion object {
         /**
-         * Obtiene un mes a partir de su número ordinal.
+         * Obtiene el mes correspondiente a un numero.
          *
-         * @param numMes El número del mes (1-12) que se quiere obtener.
-         * @return El valor del enum [Meses] correspondiente al número proporcionado,
-         * o null si no existe un mes con ese número.
+         * @param numMes Numero del mes (1-12)
+         * @return Mes correspondiente o null si no existe
          */
         fun fromNumero(numMes: Int): Meses? {
             return entries.find { it.numMes == numMes }

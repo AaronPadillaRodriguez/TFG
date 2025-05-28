@@ -2,33 +2,40 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:id="@+id/fondoMain"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="8dp">
+    android:layout_margin="4dp"
+    app:cardBackgroundColor="@color/transparent"
+    app:cardCornerRadius="16dp">
 
-    <!--Item que contiene los datos segun el tipo de media-->
+    <!--Item que contiene los datos de la temporada-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
-        android:layout_width="wrap_content"
-        android:layout_height="370dp"
-        android:padding="8dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:padding="8dp"
+        android:background="@drawable/redondeo" >
+
 
         <ImageView
             android:id="@+id/ivPortada"
             android:layout_width="150dp"
             android:layout_height="225dp"
             android:layout_marginStart="5dp"
+            android:layout_marginTop="5dp"
             android:layout_marginEnd="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.012"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.085"
+            app:layout_constraintVertical_bias="0.0"
             tools:srcCompat="@tools:sample/avatars" />
-
 
         <ProgressBar
             android:id="@+id/pbNota"
@@ -65,33 +72,54 @@
             android:id="@+id/tvNombre"
             android:layout_width="140dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
-            android:textColor="@color/black"
-            android:textSize="14sp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:ellipsize="end"
+            android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/ivPortada"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.4"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ivPortada"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/ivPortada"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             tools:text="Nombre reducido" />
 
         <TextView
-            android:id="@+id/tvFechaEstreno"
+            android:id="@+id/tvFechaEpisodios"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:gravity="center"
             android:textColor="@color/grey"
             android:textSize="12sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.062"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tvNombre"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tvNombre"
             app:layout_constraintTop_toBottomOf="@+id/tvNombre"
             app:layout_constraintVertical_bias="0.0"
             tools:text="Fecha" />
+
+        <TextView
+            android:id="@+id/tvOverview"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="6dp"
+            android:maxLines="9"
+            android:ellipsize="end"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.245"
+            app:layout_constraintStart_toStartOf="@+id/tvFechaEpisodios"
+            app:layout_constraintTop_toBottomOf="@+id/tvFechaEpisodios"
+            app:layout_constraintVertical_bias="0.006"
+            tools:text="Resumen" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

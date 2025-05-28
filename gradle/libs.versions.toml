@@ -20,6 +20,7 @@ recyclerview = "1.4.0"
 comGoogleGmsGoogleServicesGradlePlugin = "4.4.2"
 playServicesBase = "18.7.0"
 picassoTransformations = "2.4.0"
+palette = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,7 @@ androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
 androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 com-google-gms-google-services-gradle-plugin = { group = "com.google.gms.google-services", name = "com.google.gms.google-services.gradle.plugin", version.ref = "comGoogleGmsGoogleServicesGradlePlugin" }
 picasso-transformations = { group = "jp.wasabeef", name = "picasso-transformations", version.ref = "picassoTransformations" }
+androidx-palette = { group = "androidx.palette", name = "palette", version.ref = "palette" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

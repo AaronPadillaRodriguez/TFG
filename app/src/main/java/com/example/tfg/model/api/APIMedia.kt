@@ -2,6 +2,7 @@ package com.example.tfg.model.api
 
 import com.example.tfg.BuildConfig
 import com.example.tfg.model.dataclass.ApiResponse
+import com.example.tfg.model.dataclass.Credits
 import com.example.tfg.model.dataclass.Pelicula
 import com.example.tfg.model.dataclass.TvShow
 import retrofit2.http.GET
@@ -91,4 +92,18 @@ interface APImedia {
         @Query("language") language: String,
         @Header("Authorization") token: String = apiKey
     ): TvShow
+
+    @GET("movie/{media_id}/credits")
+    suspend fun getMoviePeople(
+        @Path("media_id") tvId: Int,
+        @Query("language") language: String,
+        @Header("Authorization") token: String = apiKey
+    ): Credits
+
+    @GET("tv/{media_id}/aggregate_credits")
+    suspend fun getTvPeople(
+        @Path("media_id") tvId: Int,
+        @Query("language") language: String,
+        @Header("Authorization") token: String = apiKey
+    ): Credits
 }

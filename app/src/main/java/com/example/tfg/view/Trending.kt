@@ -15,10 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * Clase encargada de mostrar contenido multimedia en tendencia según diferentes categorías temporales.
- *
- * @property context Contexto de la aplicación necesario para acceder a recursos y servicios.
- * @property b Binding de la actividad principal que contiene las referencias a las vistas.
+ * Clase que maneja la visualización de contenido multimedia en tendencia.
+ * Permite filtrar entre tendencias del día o de la semana.
  */
 class Trending(private val context: Context, private val b: ActivityMainBinding) {
 
@@ -29,8 +27,8 @@ class Trending(private val context: Context, private val b: ActivityMainBinding)
     private var currentCategory = OpcionesSpinner.HOY.texto
 
     /**
-     * Bloque de inicialización que se ejecuta al crear una instancia de la clase.
-     * Lanza una corrutina en un hilo para inicializar las vistas y cargar los datos.
+     * Inicializa el componente y comienza la carga de datos.
+     * Configura el Spinner y RecyclerView en un hilo secundario.
      */
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -41,8 +39,8 @@ class Trending(private val context: Context, private val b: ActivityMainBinding)
     }
 
     /**
-     * Inicializa el spinner con las opciones de categorías temporales (Hoy/Esta semana)
-     * y configura su listener para detectar cambios de selección.
+     * Configura el Spinner con opciones de filtrado temporal (Hoy/Esta semana).
+     * Establece el listener para detectar cambios de selección.
      */
     private fun initSpinner() {
         val adapter = ArrayAdapter(context,
@@ -87,8 +85,8 @@ class Trending(private val context: Context, private val b: ActivityMainBinding)
     }
 
     /**
-     * Inicializa el RecyclerView que muestra los elementos multimedia en tendencia.
-     * Configura el adaptador con un listener para manejar clics en los elementos.
+     * Inicializa el RecyclerView para mostrar el contenido.
+     * Configura un layout horizontal y el adaptador de medios.
      */
     private fun initRecyclerView() {
         val recyclerView = b.Tendencias.rvTendencias
@@ -103,8 +101,8 @@ class Trending(private val context: Context, private val b: ActivityMainBinding)
     }
 
     /**
-     * Carga los elementos multimedia en tendencia según la categoría seleccionada.
-     * Utiliza la función fetchMedia para obtener los datos de la API.
+     * Carga las tendencias según la categoría temporal seleccionada.
+     * Realiza la llamada a la API para obtener los contenidos populares.
      */
     private fun cargarTendencias() {
         fetchMedia(context, mediaAdapter, { api -> api.getTrendingAll("all", currentCategory) })

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fondoMain"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:background="@color/transparent"
+    app:cardCornerRadius="16dp">
+
+    <!--Item que contiene los datos basicos del actor/actriz-->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:padding="8dp"
+        android:background="@drawable/redondeo">
+
+
+        <ImageView
+            android:id="@+id/ivFoto"
+            android:layout_width="150dp"
+            android:layout_height="225dp"
+            android:layout_marginTop="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/tvNombre"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/ivFoto"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/ivFoto"
+            app:layout_constraintTop_toBottomOf="@+id/ivFoto"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="Nombre Actor" />
+
+        <TextView
+            android:id="@+id/tvCharacter"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tvNombre"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tvNombre"
+            app:layout_constraintTop_toBottomOf="@+id/tvNombre"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="Interpreta A" />
+
+        <TextView
+            android:id="@+id/tvCantEpisodios"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#767676"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/tvCharacter"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tvCharacter"
+            app:layout_constraintTop_toBottomOf="@+id/tvCharacter"
+            app:layout_constraintVertical_bias="0.0"
+            tools:text="Cantidad Episodios" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

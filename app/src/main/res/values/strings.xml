@@ -3,6 +3,10 @@
     <string name="lo_m_s_popular">Lo más popular</string>
     <string name="tendencias">Tendencias</string>
     <string name="ver_gratis">Ver Gratis</string>
+    <string name="vista_general">Vista General</string>
+    <string name="reparto">Reparto</string>
+    <string name="cargando">Cargando ...</string>
+    <string name="temporadas">Temporadas</string>
     <string-array name="Tendencias">
         <item>Hoy</item>
         <item>Esta semana</item>

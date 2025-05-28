@@ -1,312 +1,457 @@
 package com.example.tfg.view
 
 import android.content.Context
-import android.util.Log
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.palette.graphics.Palette
 import com.example.tfg.R
 import com.example.tfg.databinding.ActivityDetallesBinding
 import com.example.tfg.model.api.APImedia
 import com.example.tfg.model.dataclass.MediaItem
 import com.example.tfg.model.dataclass.Pelicula
+import com.example.tfg.model.dataclass.Seasons
 import com.example.tfg.model.dataclass.TvShow
-import com.example.tfg.utils.fetchWithLanguageFallback
+import com.example.tfg.utils.ColorManager
+import com.example.tfg.utils.OnDetailsLoadedListener
+import com.example.tfg.utils.calcularColorPromedio
+import com.example.tfg.utils.getMovieDetailsConFallback
+import com.example.tfg.utils.getRetrofit
+import com.example.tfg.utils.getTvDetailsConFallback
+import com.example.tfg.utils.isDarkColor
+import com.example.tfg.utils.dpToPx
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+/**
+ * Clase que maneja la seccion superior de la pantalla de detalles.
+ * Se encarga de cargar y mostrar la informacion basica de la media (pelicula o serie),
+ * incluyendo imagenes, titulo, fecha, generos, sinopsis y valoracion.
+ * Tambien extrae y aplica colores dinamicos basados en el poster.
+ */
 class DetalleSuperior(private val context: Context,
                       private val b: ActivityDetallesBinding,
                       private val id: Int,
-                      private val type: String) {
+                      private val type: String,
+                      private val onDetailsLoadedListener: OnDetailsLoadedListener? = null) {
 
     val api: APImedia = getRetrofit().create(APImedia::class.java)
+    private var picassoTarget: com.squareup.picasso.Target? = null
+    private var isDataLoaded = false
+    private var isColorsLoaded = false
+    private var isCleanedUp = false
+
+    // Job para controlar la corrutina principal
+    private var mainJob: Job? = null
+
+    // Variable para almacenar el TvShow cuando esté disponible
+    private var tvShowData: TvShow? = null
 
     init {
-        CoroutineScope(Dispatchers.IO).launch {
-            llamarContenido()
-        }
+        llamarContenido()
     }
 
+    /**
+     * Inicia la carga de los datos de la media.
+     * Carga los detalles desde la API y procesa la respuesta.
+     */
     private fun llamarContenido() {
-        CoroutineScope(Dispatchers.IO).launch {
+        // Verificar que el contexto sea un LifecycleOwner
+        if (context !is LifecycleOwner) {
+            handleError("Contexto inválido para operaciones asíncronas")
+            return
+        }
+
+        mainJob = context.lifecycleScope.launch {
             try {
+                if (isCleanedUp) return@launch
+
                 val mediaItem: MediaItem = when (type.lowercase()) {
-                    "movie" -> getMovieDetailsWithFallback(id)
-                    "tv" -> getTvDetailsWithFallback(id)
+                    "movie" -> getMovieDetailsConFallback(id, api)
+                    "tv" -> getTvDetailsConFallback(id, api)
                     else -> {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "Tipo de media no válido: $type", Toast.LENGTH_SHORT).show()
-                        }
+                        handleError("Tipo de media no válido: $type")
                         return@launch
                     }
                 }
 
-                withContext(Dispatchers.Main) {
-                    mostrarDetalles(mediaItem)
+                if (isCleanedUp) return@launch
+
+                // Cambiar al hilo principal para actualizar la UI
+                context.lifecycleScope.launch {
+                    if (!isCleanedUp && isContextValid()) {
+                        mostrarDetalles(mediaItem)
+                        if (mediaItem is TvShow) {
+                            tvShowData = mediaItem
+                        }
+                        isDataLoaded = true
+                        checkIfLoadingComplete()
+                    }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    println("Error obteniendo detalles: ${e.message}")
+                if (!isCleanedUp) {
+                    handleError("Error cargando detalles: ${e.message}")
                     e.printStackTrace()
-                    Toast.makeText(context, "Error cargando detalles: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
-    private suspend fun getMovieDetailsWithFallback(movieId: Int): Pelicula {
-        // Primero intentamos obtener todos los datos en español
-        val peliculaEspañol = try {
-            api.getMovieDetails(movieId, "es-ES").apply {
-                // Asegurarnos que los campos requeridos no sean null
-                media_type = media_type ?: "movie"
-            }
-        } catch (e: Exception) {
-            null
-        }
-
-        // Comprobamos si faltan datos importantes en español
-        val faltanDatos = peliculaEspañol?.let {
-            it.title.isNullOrEmpty() || it.overview.isNullOrEmpty() ||
-                    it.tagline.isNullOrEmpty() || it.poster_path.isNullOrEmpty() ||
-                    it.backdrop_path.isNullOrEmpty()
-        } ?: true
-
-        // Si faltan datos, intentamos completar con inglés
-        if (faltanDatos) {
-            try {
-                val peliculaIngles = api.getMovieDetails(movieId, "en-US").apply {
-                    // Asegurarnos que los campos requeridos no sean null
-                    media_type = media_type ?: "movie"
-                }
-
-                // Si no teníamos datos en español, devolvemos directamente los datos en inglés
-                if (peliculaEspañol == null) {
-                    return peliculaIngles
-                }
-
-                // Combinamos los datos, dando preferencia a los datos en español cuando existen
-                return peliculaEspañol.copy(
-                    title = peliculaEspañol.title.ifEmpty { peliculaIngles.title ?: "" },
-                    overview = peliculaEspañol.overview.ifEmpty { peliculaIngles.overview ?: "" },
-                    tagline = peliculaEspañol.tagline.ifEmpty { peliculaIngles.tagline ?: "" },
-                    poster_path = peliculaEspañol.poster_path ?: peliculaIngles.poster_path,
-                    backdrop_path = peliculaEspañol.backdrop_path ?: peliculaIngles.backdrop_path
-                )
-            } catch (e: Exception) {
-                Log.w("DetalleSuperior", "Error al obtener detalles en inglés: ${e.message}")
-                // Si falla el inglés, devolvemos lo que tenemos en español o lanzamos excepción
-                return peliculaEspañol ?: throw e
-            }
-        }
-
-        return peliculaEspañol ?: fetchWithLanguageFallback(
-            fetchFunction = { language ->
-                api.getMovieDetails(movieId, language).apply {
-                    media_type = media_type ?: "movie"
-                }
-            },
-            validateResponse = { pelicula ->
-                !pelicula.title.isNullOrEmpty() && !pelicula.overview.isNullOrEmpty()
-            }
-        )
-    }
-
-    private suspend fun getTvDetailsWithFallback(tvId: Int): TvShow {
-        // Primero intentamos obtener todos los datos en español
-        val tvShowEspañol = try {
-            api.getTvDetails(tvId, "es-ES").apply {
-                // Asegurarnos que los campos requeridos no sean null
-                media_type = media_type ?: "tv"
-            }
-        } catch (e: Exception) {
-            null
-        }
-
-        // Comprobamos si faltan datos importantes en español
-        val faltanDatos = tvShowEspañol?.let {
-            it.name.isNullOrEmpty() || it.overview.isNullOrEmpty() ||
-                    it.tagline.isNullOrEmpty() || it.poster_path.isNullOrEmpty() ||
-                    it.backdrop_path.isNullOrEmpty()
-        } ?: true
-
-        // Si faltan datos, intentamos completar con inglés
-        if (faltanDatos) {
-            try {
-                val tvShowIngles = api.getTvDetails(tvId, "en-US").apply {
-                    // Asegurarnos que los campos requeridos no sean null
-                    media_type = media_type ?: "tv"
-                }
-
-                // Si no teníamos datos en español, devolvemos directamente los datos en inglés
-                if (tvShowEspañol == null) {
-                    return tvShowIngles
-                }
-
-                // Combinamos los datos, dando preferencia a los datos en español cuando existen
-                return tvShowEspañol.copy(
-                    name = tvShowEspañol.name.ifEmpty { tvShowIngles.name ?: "" },
-                    overview = tvShowEspañol.overview.ifEmpty { tvShowIngles.overview ?: "" },
-                    tagline = tvShowEspañol.tagline.ifEmpty { tvShowIngles.tagline ?: "" },
-                    poster_path = tvShowEspañol.poster_path ?: tvShowIngles.poster_path,
-                    backdrop_path = tvShowEspañol.backdrop_path ?: tvShowIngles.backdrop_path
-                )
-            } catch (e: Exception) {
-                Log.w("DetalleSuperior", "Error al obtener detalles en inglés: ${e.message}")
-                // Si falla el inglés, devolvemos lo que tenemos en español o lanzamos excepción
-                return tvShowEspañol ?: throw e
-            }
-        }
-
-        return tvShowEspañol ?: fetchWithLanguageFallback(
-            fetchFunction = { language ->
-                api.getTvDetails(tvId, language).apply {
-                    media_type = media_type ?: "tv"
-                }
-            },
-            validateResponse = { tvShow ->
-                !tvShow.name.isNullOrEmpty() && !tvShow.overview.isNullOrEmpty()
-            }
-        )
-    }
-
+    /**
+     * Muestra los detalles de la media en la interfaz.
+     * @param mediaItem Objeto con los datos de la media a mostrar.
+     */
     private fun mostrarDetalles(mediaItem: MediaItem) {
+        if (isCleanedUp || !isContextValid()) return
+
         val binding = b.DetalleSuperior
 
-        // Cargar imágenes
-        Picasso.get()
-            .load("https://image.tmdb.org/t/p/w500${mediaItem.poster_path}")
-            .resize(150, 225)
-            .transform(RoundedCornersTransformation(16, 0))
-            .into(binding.ivPoster)
+        try {
+            // Configurar un fondo temporal
+            binding.main.setBackgroundColor(Color.TRANSPARENT)
 
-        Picasso.get()
-            .load("https://image.tmdb.org/t/p/w500${mediaItem.backdrop_path}")
-            .resize(327, 256)
-            .transform(RoundedCornersTransformation(16, 0))
-            .into(binding.ivFondo)
+            // Cargar imágenes y configurar otros datos primero
+            Picasso.get()
+                .load("https://image.tmdb.org/t/p/w500${mediaItem.poster_path}")
+                .placeholder(R.drawable.media_carga)
+                .error(R.drawable.media_carga)
+                .fit()
+                .centerInside()
+                .transform(RoundedCornersTransformation(16, 0))
+                .into(binding.ivPoster)
 
-        // Mostrar porcentaje de valoración
-        mostrarPorcentaje(mediaItem, binding)
+            Picasso.get()
+                .load("https://image.tmdb.org/t/p/original${mediaItem.backdrop_path}")
+                .placeholder(R.drawable.imagen_carga)
+                .error(R.drawable.imagen_carga)
+                .fit()
+                .centerInside()
+                .transform(RoundedCornersTransformation(16, 0))
+                .into(binding.ivFondo)
 
-        // Configurar textos según el tipo (Película o TV)
-        val fechaEstreno = when (mediaItem) {
-            is Pelicula -> formatDate(mediaItem.release_date)
-            is TvShow -> formatDate(mediaItem.first_air_date)
-            else -> ""
-        }
+            // Mostrar porcentaje de valoración
+            mostrarPorcentaje(mediaItem, binding)
 
-        // Asignar título y año
-        binding.tvTitulo.text = when (mediaItem) {
-            is Pelicula -> mediaItem.title
-            is TvShow -> mediaItem.name
-        }
+            // Configurar textos según el tipo (Película o TV)
+            val fechaEstreno = when (mediaItem) {
+                is Pelicula -> mediaItem.release_date?.let { formatDate(it) }
+                is TvShow -> mediaItem.first_air_date?.let { formatDate(it) }
+            }
 
-        binding.tvFechaAnio.text = "(${fechaEstreno.takeLast(4)})"
+            // Asignar título y año
+            binding.tvTitulo.text = when (mediaItem) {
+                is Pelicula -> mediaItem.title
+                is TvShow -> mediaItem.name
+            }
 
-        // Ajustar dinámicamente la posición del año (abajo o derecha)
-        binding.tvTitulo.post {
-            val maxWidthPx = 320.dpToPx(context) 
-            if (binding.tvTitulo.width > maxWidthPx) {
-                val params = binding.tvFechaAnio.layoutParams as ConstraintLayout.LayoutParams
-                params.topToBottom = R.id.tvTitulo
-                params.startToEnd = ConstraintLayout.LayoutParams.UNSET
-                params.topMargin = 4.dpToPx(context)
-                binding.tvFechaAnio.layoutParams = params
+            binding.tvFechaAnio.text = "(${fechaEstreno?.takeLast(4)})"
+
+            // Ajustar dinámicamente la posición del año
+            binding.tvTitulo.post {
+                if (isCleanedUp || !isContextValid()) return@post
+
+                val maxWidthPx = 320.dpToPx(context)
+                if (binding.tvTitulo.width > maxWidthPx) {
+                    val params = binding.tvFechaAnio.layoutParams as ConstraintLayout.LayoutParams
+                    params.topToBottom = R.id.tvTitulo
+                    params.startToEnd = ConstraintLayout.LayoutParams.UNSET
+                    params.topMargin = 4.dpToPx(context)
+                    binding.tvFechaAnio.layoutParams = params
+                }
+            }
+
+            // Configurar autoajuste del título
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                binding.tvTitulo,
+                12, 26, 1, TypedValue.COMPLEX_UNIT_SP
+            )
+
+            val hasValidTagline = mediaItem.tagline?.trim().isNullOrEmpty().not()
+
+            binding.tvTagline.visibility = if (hasValidTagline) {
+                binding.tvTagline.text = mediaItem.tagline?.trim()
+                View.VISIBLE
+            } else {
+                binding.tvVistaGeneral.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = 10.dpToPx(context)
+                }
+                View.GONE
+            }
+
+            TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                binding.tvTagline, 12, 26, 1, TypedValue.COMPLEX_UNIT_SP
+            )
+
+            // Configurar datos adicionales
+            val datos = when (mediaItem) {
+                is Pelicula -> {
+                    val runtime = if (mediaItem.runtime!! > 0)
+                        "${mediaItem.runtime.div(60)}h ${mediaItem.runtime.rem(60)}m"
+                    else "Duración desconocida"
+                    "$fechaEstreno · $runtime\n${mediaItem.genres.toString().replace("[", "").replace("]", "")}"
+                }
+                is TvShow -> {
+                    "$fechaEstreno\n${mediaItem.genres.toString().replace("[", "").replace("]", "")}"
+                }
+            }
+            binding.tvDatos.text = datos
+
+            // Configurar resumen
+            binding.tvResumen.text = mediaItem.overview ?: "Sin descripción disponible"
+
+            // Limpiar el Target anterior si existe
+            cleanupPicassoTarget()
+
+            // Cargar el color de fondo
+            picassoTarget = object : com.squareup.picasso.Target {
+                override fun onBitmapLoaded(bitmap: Bitmap?, from: Picasso.LoadedFrom?) {
+                    if (isCleanedUp || !isContextValid()) return
+
+                    if (bitmap != null) {
+                        processBitmapColors(bitmap, binding)
+                    } else {
+                        useDefaultColors(binding)
+                    }
+                    isColorsLoaded = true
+                    checkIfLoadingComplete()
+                }
+
+                override fun onBitmapFailed(e: Exception?, errorDrawable: Drawable?) {
+                    if (isCleanedUp || !isContextValid()) return
+
+                    useDefaultColors(binding)
+                    isColorsLoaded = true
+                    checkIfLoadingComplete()
+                }
+
+                override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+                    // Opcional: mostrar placeholder
+                }
+            }
+
+            Picasso.get()
+                .load("https://image.tmdb.org/t/p/w500${mediaItem.poster_path}")
+                .into(picassoTarget!!)
+
+        } catch (e: Exception) {
+            if (!isCleanedUp) {
+                handleError("Error configurando la vista: ${e.message}")
             }
         }
-
-        // Configurar autoajuste del título
-        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
-            binding.tvTitulo,
-            12,  // Tamaño mínimo (sp)
-            26,  // Tamaño inicial (sp)
-            1,   // Paso de reducción
-            TypedValue.COMPLEX_UNIT_SP
-        )
-
-        val hasValidTagline = mediaItem.tagline?.trim().isNullOrEmpty().not()
-
-        binding.tvTagline.visibility = if (hasValidTagline) {
-            binding.tvTagline.text = mediaItem.tagline?.trim() // Asigna el texto (sin espacios extras)
-            View.VISIBLE
-        } else {
-            binding.tvVistaGeneral.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin = 10.dpToPx(context) // Convierte 10dp a píxeles
-            }
-            View.GONE
-        }
-
-        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
-            binding.tvTagline,
-            12,
-            26,
-            1,
-            TypedValue.COMPLEX_UNIT_SP
-        )
-
-        // Configurar datos adicionales (runtime, géneros, etc.)
-        val datos = when (mediaItem) {
-            is Pelicula -> {
-                val runtime = if (mediaItem.runtime > 0) "${mediaItem.runtime / 60}h ${mediaItem.runtime % 60}m"
-                else "Duración desconocida"
-                "$fechaEstreno · $runtime\n${
-                    mediaItem.genres.toString().replace("[", "")
-                        .replace("]", "")
-                }"
-            }
-            is TvShow -> {
-                "$fechaEstreno\n${mediaItem.genres.toString().replace("[", "")
-                    .replace("]", "")}"
-            }
-            else -> ""
-        }
-        binding.tvDatos.text = datos
-
-        // Configurar resumen
-        binding.tvResumen.text = mediaItem.overview ?: "Sin descripción disponible"
     }
 
-    // Extensión para convertir dp a píxeles
-    private fun Int.dpToPx(context: Context): Int {
-        return (this * context.resources.displayMetrics.density).toInt()
+    /**
+     * Procesa los colores de un bitmap para aplicar un tema dinamico.
+     * Extrae colores dominantes y ajusta la interfaz en consecuencia.
+     * @param bitmap Imagen de la que extraer los colores.
+     * @param binding Binding de la vista donde aplicar los colores.
+     */
+    private fun processBitmapColors(bitmap: Bitmap, binding: com.example.tfg.databinding.ItemDetalleSuperiorBinding) {
+        if (isCleanedUp || !isContextValid()) return
+
+        try {
+            Palette.from(bitmap).generate {
+                if (isCleanedUp || !isContextValid()) return@generate
+
+                val averageColor = calcularColorPromedio(bitmap)
+                binding.main.setBackgroundColor(averageColor)
+
+                // Determinar si el color es oscuro
+                val isDark = averageColor.isDarkColor()
+                val textColor = if (isDark) Color.WHITE else Color.BLACK
+
+                // Aplicar el color de texto a todos los TextView
+                binding.tvTitulo.setTextColor(textColor)
+                binding.tvFechaAnio.setTextColor(textColor)
+                binding.tvTagline.setTextColor(textColor)
+                binding.tvDatos.setTextColor(textColor)
+                binding.tvVistaGeneral.setTextColor(textColor)
+                binding.tvResumen.setTextColor(textColor)
+
+                // Crear color más oscuro para el fondo principal
+                val hsv = FloatArray(3)
+                Color.colorToHSV(averageColor, hsv)
+                hsv[2] *= 0.8f // Reduce el brillo en un 20%
+                val darkerColor = Color.HSVToColor(hsv)
+                b.main.setBackgroundColor(darkerColor)
+
+                // Crear gradiente dinámico
+                val gradientDrawable = GradientDrawable(
+                    GradientDrawable.Orientation.LEFT_RIGHT,
+                    intArrayOf(averageColor, Color.TRANSPARENT)
+                ).apply {
+                    cornerRadius = 0f
+                    gradientType = GradientDrawable.LINEAR_GRADIENT
+                }
+
+                binding.bottomGradient.background = gradientDrawable
+
+                // Actualizar ColorManager
+                ColorManager.updateFromBitmap(bitmap)
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (!isCleanedUp && isContextValid()) {
+                        isColorsLoaded = true
+                        checkIfLoadingComplete()
+                    }
+                }, 50L)
+            }
+        } catch (e: Exception) {
+            if (!isCleanedUp) {
+                useDefaultColors(binding)
+            }
+        }
     }
 
+    /**
+     * Aplica colores por defecto cuando no se pueden extraer del poster.
+     * @param binding Binding de la vista donde aplicar los colores.
+     */
+    private fun useDefaultColors(binding: com.example.tfg.databinding.ItemDetalleSuperiorBinding) {
+        if (isCleanedUp || !isContextValid()) return
+
+        try {
+            val defaultColor = ContextCompat.getColor(context, R.color.white)
+            binding.main.setBackgroundColor(defaultColor)
+
+            // Aplicar colores de texto por defecto
+            val textColor = Color.BLACK
+            binding.tvTitulo.setTextColor(textColor)
+            binding.tvFechaAnio.setTextColor(textColor)
+            binding.tvTagline.setTextColor(textColor)
+            binding.tvDatos.setTextColor(textColor)
+            binding.tvVistaGeneral.setTextColor(textColor)
+            binding.tvResumen.setTextColor(textColor)
+
+            // Crear color más oscuro
+            val hsv = FloatArray(3)
+            Color.colorToHSV(defaultColor, hsv)
+            hsv[2] *= 0.8f
+            val darkerColor = Color.HSVToColor(hsv)
+            b.main.setBackgroundColor(darkerColor)
+
+            // Gradiente por defecto
+            val defaultGradient = GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                intArrayOf(defaultColor, Color.TRANSPARENT)
+            )
+            binding.bottomGradient.background = defaultGradient
+
+            // Actualizar ColorManager con colores por defecto
+            ColorManager.averageColor = defaultColor
+            ColorManager.darkerColor = darkerColor
+            ColorManager.isDark = false
+        } catch (e: Exception) {
+            // Error silencioso si no se pueden aplicar colores por defecto
+        }
+    }
+
+    /**
+     * Verifica si tanto los datos como los colores han terminado de cargar.
+     * Si es asi, notifica al listener.
+     */
+    private fun checkIfLoadingComplete() {
+        if (isCleanedUp || !isContextValid()) return
+
+        if (isDataLoaded && isColorsLoaded) {
+            onDetailsLoadedListener?.onDetailsLoaded()
+        }
+    }
+
+    /**
+     * Maneja errores durante la carga de datos.
+     * @param message Mensaje de error a mostrar.
+     */
+    private fun handleError(message: String) {
+        if (isCleanedUp || !isContextValid()) return
+
+        try {
+            // Usar contexto de actividad si está disponible
+            if (context is LifecycleOwner) {
+                context.lifecycleScope.launch {
+                    if (isContextValid()) {
+                        println(message)
+                        notifyLoadingError()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Error silencioso
+            notifyLoadingError()
+        }
+    }
+
+    /**
+     * Notifica un error de carga y aplica colores por defecto.
+     */
+    private fun notifyLoadingError() {
+        if (isCleanedUp) return
+
+        try {
+            // Usar colores por defecto en caso de error
+            ColorManager.averageColor = ContextCompat.getColor(context, R.color.white)
+            ColorManager.darkerColor = ContextCompat.getColor(context, android.R.color.darker_gray)
+            ColorManager.isDark = false
+
+            // Notificar que la carga está "completa" aunque haya fallado
+            onDetailsLoadedListener?.onDetailsLoaded()
+        } catch (e: Exception) {
+            // Error silencioso
+        }
+    }
+
+    /**
+     * Muestra la valoracion de la media como porcentaje.
+     * @param mediaItem Objeto con los datos de la media.
+     * @param binding Binding de la vista donde mostrar la valoracion.
+     */
     private fun mostrarPorcentaje(mediaItem: MediaItem, binding: com.example.tfg.databinding.ItemDetalleSuperiorBinding) {
-        val porcentaje = (mediaItem.vote_average * 10).toInt()
-        binding.tvNota.text = "$porcentaje%"
+        if (isCleanedUp || !isContextValid()) return
 
-        binding.pbNota.progress = porcentaje
-        binding.pbNota.secondaryProgress = porcentaje
+        try {
+            val porcentaje = (mediaItem.vote_average?.times(10))?.toInt() ?: 0
+            binding.tvNota.text = "$porcentaje%"
 
-        val drawableRes = when {
-            porcentaje == 0 -> R.drawable.circular_progress_null
-            porcentaje >= 70 -> R.drawable.circular_progress_green
-            porcentaje in 30..69 -> R.drawable.circular_progress_yellow
-            else -> R.drawable.circular_progress_red
+            binding.pbNota.progress = porcentaje
+            binding.pbNota.secondaryProgress = porcentaje
+
+            val drawableRes = when {
+                porcentaje == 0 -> R.drawable.circular_progress_null
+                porcentaje >= 70 -> R.drawable.circular_progress_green
+                porcentaje in 30..69 -> R.drawable.circular_progress_yellow
+                else -> R.drawable.circular_progress_red
+            }
+
+            val drawable = ContextCompat.getDrawable(context, drawableRes)
+            binding.pbNota.progressDrawable = drawable
+            binding.pbNota.progressDrawable.level = porcentaje * 100
+            binding.pbNota.invalidate()
+        } catch (e: Exception) {
+            // Error silencioso
         }
-
-        val drawable = ContextCompat.getDrawable(context, drawableRes)
-        binding.pbNota.progressDrawable = drawable
-
-        binding.pbNota.progressDrawable.level = porcentaje * 100
-        binding.pbNota.invalidate()
     }
 
+    /**
+     * Formatea una fecha de "yyyy-MM-dd" a "dd/MM/yyyy".
+     * @param fechaOriginal Cadena con la fecha original.
+     * @return Cadena con la fecha formateada.
+     */
     private fun formatDate(fechaOriginal: String): String {
         if (fechaOriginal.isBlank()) return "Fecha no disponible"
 
@@ -323,9 +468,54 @@ class DetalleSuperior(private val context: Context,
         }
     }
 
-    private fun getRetrofit(): Retrofit =
-        Retrofit.Builder()
-            .baseUrl("https://api.themoviedb.org/3/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+    /**
+     * Verifica si el contexto sigue siendo valido.
+     * @return true si el contexto es valido, false en caso contrario.
+     */
+    private fun isContextValid(): Boolean {
+        return when (context) {
+            is DetallesActivity -> !context.isDestroyed && !context.isFinishing
+            else -> true
+        }
+    }
+
+    /**
+     * Limpia el target de Picasso para evitar memory leaks.
+     */
+    private fun cleanupPicassoTarget() {
+        picassoTarget?.let {
+            try {
+                Picasso.get().cancelRequest(it)
+            } catch (e: Exception) {
+                // Error silencioso
+            }
+            picassoTarget = null
+        }
+    }
+
+    /**
+     * Libera recursos y cancela operaciones pendientes.
+     * Debe llamarse cuando la clase ya no se use.
+     */
+    fun cleanup() {
+        isCleanedUp = true
+
+        // Cancelar job principal
+        mainJob?.cancel()
+
+        // Limpiar Picasso target
+        cleanupPicassoTarget()
+
+        // Resetear flags
+        isDataLoaded = false
+        isColorsLoaded = false
+    }
+
+    /**
+     * Obtiene la lista de temporadas de una serie.
+     * @return Lista de temporadas o lista vacia si no es una serie.
+     */
+    fun getTvShowList(): List<Seasons> {
+        return tvShowData?.seasons ?: emptyList()
+    }
 }

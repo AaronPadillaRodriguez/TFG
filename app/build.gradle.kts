@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.recyclerview)
     implementation(libs.picasso.transformations)
+    implementation(libs.androidx.palette)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

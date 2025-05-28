@@ -15,11 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * Clase encargada de mostrar contenido multimedia popular según diferentes categorías.
- * Permite al usuario filtrar el contenido por opciones como retransmisión, televisión, alquiler o cines.
- *
- * @property context Contexto de la aplicación necesario para el acceso a recursos y servicios.
- * @property b Binding de la actividad principal que contiene las referencias a las vistas.
+ * Clase que maneja la visualizacion de contenido multimedia popular.
+ * Permite filtrar entre diferentes categorias mediante un Spinner.
  */
 class Popular(private val context: Context, private val b: ActivityMainBinding) {
     /**
@@ -34,8 +31,8 @@ class Popular(private val context: Context, private val b: ActivityMainBinding) 
     private var currentCategory = OpcionesSpinner.RETRANSMISION.opcion
 
     /**
-     * Bloque de inicialización que se ejecuta al crear una instancia de la clase.
-     * Lanza una corrutina en un hilo de IO para inicializar las vistas y cargar los datos.
+     * Inicializa el componente y comienza la carga de datos.
+     * Configura el Spinner y RecyclerView en un hilo secundario.
      */
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -46,8 +43,8 @@ class Popular(private val context: Context, private val b: ActivityMainBinding) 
     }
 
     /**
-     * Inicializa el spinner con las opciones de categorías de contenido popular
-     * y configura su listener para detectar cambios de selección.
+     * Configura el Spinner con opciones de filtrado.
+     * Establece el listener para detectar cambios de seleccion.
      */
     private fun initSpinner() {
         val adapter = ArrayAdapter(context,
@@ -94,8 +91,8 @@ class Popular(private val context: Context, private val b: ActivityMainBinding) 
     }
 
     /**
-     * Inicializa el RecyclerView que muestra los elementos multimedia populares.
-     * Configura el adaptador con un listener para manejar clics en los elementos.
+     * Inicializa el RecyclerView para mostrar el contenido.
+     * Configura un layout horizontal y el adaptador de medios.
      */
     private fun initRecyclerView() {
         val recyclerView = b.Popular.rvPopular
@@ -110,15 +107,15 @@ class Popular(private val context: Context, private val b: ActivityMainBinding) 
     }
 
     /**
-     * Carga el contenido multimedia según la categoría seleccionada.
-     * Utiliza diferentes llamadas a la API dependiendo de la opción elegida.
+     * Carga el contenido segun la categoria seleccionada.
+     * Realiza diferentes llamadas a la API dependiendo de la opcion elegida.
      */
     private fun cargarContenido() {
         when (currentCategory) {
-            OpcionesSpinner.EN_CINES.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getPeliculasEnCine() }, shuffle = true)
-            OpcionesSpinner.RETRANSMISION.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getEnRetransmision() }, shuffle = true)
-            OpcionesSpinner.EN_ALQUILER.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getPeliculasEnAlquiler() }, shuffle = true)
-            OpcionesSpinner.EN_TELEVISION.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getEnTelevision() }, shuffle = true)
+            OpcionesSpinner.EN_CINES.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getPeliculasEnCine() },true)
+            OpcionesSpinner.RETRANSMISION.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getEnRetransmision() }, true)
+            OpcionesSpinner.EN_ALQUILER.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getPeliculasEnAlquiler() }, true)
+            OpcionesSpinner.EN_TELEVISION.opcion -> fetchMedia(context, mediaAdapter, { api -> api.getEnTelevision() }, true)
         }
     }
 }

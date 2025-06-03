@@ -4,9 +4,6 @@ Objetivos:
 
 🟢Ventana principal, que muestre varias listas ya sea de series y/o peliculas, capaz de cambiar su contenido mediante un spinner.
 
-🟡Ventana de detalles, muestra los principales detalles de tipo de media seleccionado. 
-  (Falta: Añadir un nuevo apartado para mostrar los actores y actrices que participaron en esta)
+🟢Ventana de detalles, muestra los principales detalles de tipo de media seleccionado. 
   
-🔴Boton de busqueda, que te muestre las peliculas y series que contengan lo buscado.
-
-🔴Si llegase a dar tiempo, añadir opcion de logueo y funciones para manejar tus propias listas
+🔴Si llegase a dar tiempo, añadir opcion de logueo y funciones para manejar tus propias listas y un boton de busqueda, que te muestre las peliculas y series que contengan lo buscado.

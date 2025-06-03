@@ -1,25 +1,37 @@
 package com.example.tfg.model.dataclass
 
 /**
- * Datos de una película.
+ * Representa una pelicula obtenida de la API de TMDB.
  *
- * @property id ID único de TMDB
- * @property title Título localizado
- * @property original_title Título original
- * @property backdrop_path Ruta del fondo (nullable)
- * @property poster_path Ruta del póster (nullable)
- * @property adult Si es para adultos
- * @property original_language Idioma original
- * @property popularity Puntuación de popularidad
- * @property genres Lista de géneros
- * @property tagline Frase destacada (nullable)
- * @property overview Sinopsis (nullable)
- * @property runtime Duración en minutos (nullable)
- * @property release_date Fecha de estreno (nullable)
- * @property video Si tiene video asociado (nullable)
- * @property vote_average Puntuación media (0-10)
- * @property vote_count Total de votos
- * @property media_type Siempre "movie"
+ * Esta clase implementa MediaItem y añade propiedades especificas para peliculas
+ * como duracion, fecha de estreno y titulos localizados. Se utiliza para mostrar
+ * informacion detallada de peliculas en la aplicacion.
+ *
+ * @property id Identificador unico de la pelicula en TMDB.
+ * @property title Titulo de la pelicula localizado segun el idioma de la aplicacion.
+ *               Puede ser nulo si no hay traduccion disponible.
+ * @property original_title Titulo original de la pelicula en su idioma nativo.
+ *                         Puede ser nulo en casos excepcionales.
+ * @property backdrop_path Ruta relativa a la imagen de fondo de alta resolucion.
+ * @property poster_path Ruta relativa al poster oficial de la pelicula.
+ * @property adult Indica si la pelicula tiene clasificacion para adultos.
+ * @property original_language Codigo ISO del idioma original de la pelicula.
+ * @property popularity indice de popularidad actual en TMDB.
+ * @property genres Lista de generos cinematograficos asociados.
+ * @property tagline Eslogan promocional de la pelicula.
+ * @property overview Sinopsis oficial de la pelicula.
+ * @property runtime Duracion total de la pelicula en minutos.
+ *                  Puede ser nulo si no esta especificado.
+ * @property release_date Fecha de estreno en formato ISO (YYYY-MM-DD).
+ *                       Puede ser nula para peliculas sin fecha confirmada.
+ * @property video Indica si la pelicula tiene contenido de video asociado en TMDB.
+ *                Puede ser nulo si la informacion no esta disponible.
+ * @property vote_average Puntuacion media de usuarios (0.0-10.0).
+ * @property vote_count Numero total de votos recibidos.
+ * @property media_type Siempre "movie" para instancias de esta clase.
+ *
+ * @see MediaItem
+ * @see Genero
  */
 data class Pelicula(
     override val id: Int,

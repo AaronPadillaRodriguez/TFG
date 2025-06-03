@@ -20,14 +20,20 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
- * Clase que maneja la visualizacion y carga de datos de actores y actrices (People)
- * en la pantalla de detalles.
+ * Clase responsable de la gestion y visualizacion del reparto (actores/actrices) en la pantalla de detalles
+ * de peliculas y series de TV. Maneja la carga asincrona de datos, la configuracion del RecyclerView
+ * y la aplicacion de estilos dinamicos basados en el tema de la aplicacion.
  *
- * @property context Contexto de la aplicacion, debe ser un LifecycleOwner.
- * @property b Binding de la actividad de detalles.
- * @property type Tipo de media ("movie" o "tv").
- * @property id ID de la media.
- * @property onLoadedCallback Callback opcional que se ejecuta al terminar la carga.
+ * Esta clase implementa un patron de inicializacion asincrona con manejo de ciclo de vida para evitar
+ * memory leaks y crashes por contextos invalidos.
+ *
+ * @property context Contexto de la aplicacion que debe implementar LifecycleOwner para el manejo
+ *                   correcto del ciclo de vida de las corrutinas
+ * @property b Binding de la actividad de detalles que proporciona acceso a las vistas de la UI
+ * @property type Tipo de contenido multimedia ("movie" para peliculas o "tv" para series)
+ * @property id Identificador unico del contenido multimedia en la API de TMDB
+ * @property onLoadedCallback Callback opcional que se ejecuta cuando la carga de datos ha finalizado,
+ *                           util para coordinar con otros componentes de la UI
  */
 class DetallePeople(private val context: Context,
                     private val b: ActivityDetallesBinding,
@@ -35,13 +41,31 @@ class DetallePeople(private val context: Context,
                     private val id: Int,
                     private val onLoadedCallback: (() -> Unit)? = null) {
 
-
+    /**
+     * Adaptador del RecyclerView que maneja la lista de personas (actores/actrices)
+     * Se inicializa de forma lazy para evitar problemas de concurrencia
+     */
     private lateinit var peopleAdapter: PeopleAdapter
+
+    /**
+     * Flag que indica si los recursos han sido liberados para evitar operaciones
+     * en un contexto ya destruido
+     */
     private var isCleanedUp = false
 
+    /**
+     * Job de la corrutina de inicializacion, permite cancelar la operacion si es necesario
+     */
     private var initJob: Job? = null
+
+    /**
+     * Job de la corrutina de carga de datos, permite cancelar la operacion si es necesario
+     */
     private var loadDataJob: Job? = null
 
+    /**
+     * Instancia de la API para realizar peticiones HTTP a los servicios de TMDB
+     */
     private val api: APImedia = getRetrofit().create(APImedia::class.java)
 
     init {
@@ -49,173 +73,218 @@ class DetallePeople(private val context: Context,
     }
 
     /**
-     * Inicializa el componente y carga los datos.
+     * Inicializa el componente de forma asincrona siguiendo un patron de inicializacion segura.
+     *
+     * El proceso de inicializacion se divide en tres fases:
+     * 1. Configuracion del RecyclerView con adaptador vacio
+     * 2. Carga asincrona de datos del reparto desde la API
+     * 3. Aplicacion de estilos y configuraciones de UI
+     *
+     * Cada fase incluye verificaciones de estado para evitar operaciones en contextos invalidos.
+     *
+     * @throws Exception Si el contexto no implementa LifecycleOwner o si ocurre un error durante la inicializacion
      */
     private fun initializeComponent() {
-        // Verificar que el contexto sea un LifecycleOwner
+        // Verificar que el contexto sea un LifecycleOwner para el manejo seguro de corrutinas
         if (context !is LifecycleOwner) {
             println("Error en DetallePeople: El contexto debe ser un LifecycleOwner")
             isCleanedUp = true
             return
         }
 
+        // Lanzar la inicializacion en el scope del ciclo de vida del contexto
         initJob = context.lifecycleScope.launch {
             try {
+                // Verificacion de estado antes de cada operacion critica
                 if (isCleanedUp) return@launch
 
-                // Inicializar el RecyclerView con un adaptador vacío primero
+                // Fase 1: Inicializar el RecyclerView con un adaptador vacio
                 initRecyclerView()
 
                 if (isCleanedUp) return@launch
 
-                // Luego cargar los datos
+                // Fase 2: Cargar los datos del reparto desde la API
                 cargarPeople()
 
                 if (isCleanedUp) return@launch
 
-                // Configuraciones de UI que no dependen de los datos
+                // Fase 3: Aplicar configuraciones de UI y estilos
                 setupUI()
 
+                // Notificar que la carga ha terminado
                 onLoadedCallback?.invoke()
             } catch (e: Exception) {
                 if (!isCleanedUp) {
-                    handleError("Error durante la inicialización", e)
+                    println("Error en DetallePeople: Error durante la inicializacion")
+                    e.printStackTrace()
                 }
             }
         }
     }
 
     /**
-     * Configura el RecyclerView para mostrar la lista de actores.
+     * Configura el RecyclerView para mostrar la lista horizontal de actores y actrices.
+     *
+     * Inicializa el adaptador con un callback para manejar los clics en los elementos
+     * y configura un LinearLayoutManager horizontal para la disposicion de los elementos.
+     *
+     * @throws Exception Si ocurre un error durante la configuracion del RecyclerView
      */
     private fun initRecyclerView() {
         if (isCleanedUp || !isContextValid()) return
 
         try {
-            // Crear el adaptador vacío primero (sin datos)
+            // Crear el adaptador con lambda para manejar clics en elementos del reparto
             peopleAdapter = PeopleAdapter { item ->
+                // Verificar estado antes de procesar el clic
                 if (!isCleanedUp && isContextValid()) {
-                    onClickListener(context, item)
+                    onClickListener(context, item) // Navegar a detalles de la persona
                 }
             }
 
             // Configurar el RecyclerView en el hilo principal
-            // Como ya estamos en una corrutina del lifecycleScope, podemos acceder directamente a la UI
             if (!isCleanedUp && isContextValid()) {
                 val recyclerView = b.DetallePeople.rvPeople
+
+                // Configurar layout horizontal para mostrar elementos en fila
                 recyclerView.layoutManager = LinearLayoutManager(
                     context,
                     LinearLayoutManager.HORIZONTAL,
                     false
                 )
+
+                // Asignar el adaptador al RecyclerView
                 recyclerView.adapter = peopleAdapter
             }
         } catch (e: Exception) {
             if (!isCleanedUp) {
-                handleError("Error inicializando RecyclerView", e)
+                println("Error en DetallePeople: Error inicializando RecyclerView")
+                e.printStackTrace()
             }
         }
     }
 
     /**
-     * Carga los datos de actores segun el tipo de media (pelicula o serie).
+     * Carga los datos del reparto desde la API segun el tipo de contenido multimedia.
+     *
+     * Utiliza diferentes endpoints de la API dependiendo de si el contenido es una pelicula
+     * o una serie de TV. Los datos se cargan de forma asincrona y se pasan al adaptador
+     * una vez obtenidos.
+     *
+     * @throws Exception Si ocurre un error durante la carga de datos desde la API
      */
     private suspend fun cargarPeople() {
         if (isCleanedUp || !isContextValid()) return
 
         try {
-            // Ya estamos en el contexto de lifecycleScope, no necesitamos lanzar otra corrutina
             if (!isCleanedUp && isContextValid()) {
                 when (type.lowercase()) {
                     "movie" -> {
+                        // Obtener reparto de pelicula con fallback en caso de error
                         val moviePeople = getMoviePeopleConFallback(id, api)
                         if (!isCleanedUp && isContextValid()) {
+                            // Poblar el adaptador con los datos obtenidos
                             fetchPeople(context, peopleAdapter, moviePeople)
                         }
                     }
                     "tv" -> {
+                        // Obtener reparto de serie de TV con fallback en caso de error
                         val tvPeople = getTvPeopleConFallback(id, api)
                         if (!isCleanedUp && isContextValid()) {
+                            // Poblar el adaptador con los datos obtenidos
                             fetchPeople(context, peopleAdapter, tvPeople)
                         }
                     }
                     else -> {
-                        handleError("Tipo de media no válido: $type", null)
+                        println("Error en DetallePeople: Tipo de media no valido: $type")
                     }
                 }
             }
         } catch (e: Exception) {
             if (!isCleanedUp) {
-                handleError("Error cargando datos de people", e)
+                println("Error en DetallePeople: Error cargando datos de people")
+                e.printStackTrace()
             }
         }
     }
 
     /**
-     * Aplica estilos y colores a la interfaz.
+     * Aplica estilos dinamicos y configuraciones de UI basados en el tema actual de la aplicacion.
+     *
+     * Configura los colores del texto y fondo segun si el tema es oscuro o claro,
+     * y aplica un fondo redondeado al contenedor del reparto utilizando un GradientDrawable.
+     *
+     * @throws Exception Si ocurre un error durante la aplicacion de estilos
      */
     private fun setupUI() {
         if (isCleanedUp || !isContextValid()) return
 
         try {
-            // Ya estamos en el contexto correcto, podemos modificar la UI directamente
             if (!isCleanedUp && isContextValid()) {
+                // Determinar color del texto segun el tema (blanco para oscuro, negro para claro)
                 val textColor = if (ColorManager.isDark) Color.WHITE else Color.BLACK
 
+                // Aplicar colores dinamicos a los elementos de UI
                 b.DetallePeople.tvReparto.setTextColor(textColor)
                 b.DetallePeople.main.setBackgroundColor(ColorManager.darkerColor)
 
+                // Crear y aplicar fondo redondeado al contenedor del reparto
                 val roundedDrawable = GradientDrawable().apply {
-                    setColor(ColorManager.averageColor)
-                    cornerRadius = 12.dpToPx(context).toFloat()
+                    setColor(ColorManager.averageColor) // Color base del tema
+                    cornerRadius = 12.dpToPx(context).toFloat() // Bordes redondeados de 12dp
                 }
                 b.DetallePeople.fondoReparto.background = roundedDrawable
             }
         } catch (e: Exception) {
             if (!isCleanedUp) {
-                handleError("Error configurando UI", e)
+                println("Error en DetallePeople: Error configurando UI")
+                e.printStackTrace()
             }
         }
     }
 
     /**
-     * Verifica si el contexto sigue siendo valido.
-     * @return true si el contexto es valido, false en caso contrario.
+     * Verifica si el contexto actual sigue siendo valido para realizar operaciones de UI.
+     *
+     * Para actividades, verifica que no esten destruidas o en proceso de finalizacion.
+     * Para otros tipos de contexto, se basa en el flag de cleanup.
+     *
+     * @return true si el contexto es valido y se pueden realizar operaciones seguras,
+     *         false si el contexto esta invalido y se deben evitar operaciones de UI
      */
     private fun isContextValid(): Boolean {
         return when (context) {
+            // Para DetallesActivity, verificar estado especifico de la actividad
             is DetallesActivity -> !context.isDestroyed && !context.isFinishing
+            // Para otros contextos, usar el flag general de cleanup
             else -> !isCleanedUp
         }
     }
 
     /**
-     * Maneja errores durante la ejecucion.
-     * @param message Mensaje de error.
-     * @param exception Excepcion opcional relacionada.
-     */
-    private fun handleError(message: String, exception: Exception?) {
-        println("Error en DetallePeople: $message")
-        exception?.printStackTrace()
-    }
-
-    /**
-     * Libera recursos y cancela operaciones pendientes.
-     * Debe llamarse cuando la clase ya no se use.
+     * Libera todos los recursos utilizados por la clase y cancela operaciones pendientes.
+     *
+     * Este metodo debe llamarse obligatoriamente cuando la clase ya no se vaya a utilizar
+     * para evitar memory leaks y crashes por contextos invalidos. Cancela todas las
+     * corrutinas activas, limpia el adaptador y resetea las referencias.
+     *
+     * Es especialmente importante llamar este metodo en el onDestroy() de la actividad
+     * o cuando se navegue fuera de la pantalla de detalles.
      */
     fun cleanup() {
+        // Marcar como limpio para prevenir nuevas operaciones
         isCleanedUp = true
 
-        // Cancelar todas las corrutinas
+        // Cancelar todas las corrutinas activas
         initJob?.cancel()
         loadDataJob?.cancel()
 
-        // Limpiar el adaptador si existe
+        // Limpiar el adaptador si ha sido inicializado
         if (::peopleAdapter.isInitialized) {
             peopleAdapter.cleanup()
         }
 
-        // Resetear jobs
+        // Resetear referencias de jobs para liberar memoria
         initJob = null
         loadDataJob = null
     }

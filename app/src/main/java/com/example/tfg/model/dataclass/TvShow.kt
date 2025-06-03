@@ -1,25 +1,38 @@
 package com.example.tfg.model.dataclass
 
 /**
- * Datos de una serie de TV.
+ * Representa una serie de television obtenida de la API de TMDB.
  *
- * @property id ID único de TMDB
- * @property name Título localizado
- * @property original_name Título original
- * @property backdrop_path Ruta del fondo (nullable)
- * @property poster_path Ruta del póster (nullable)
- * @property adult Si es para adultos
- * @property original_language Idioma original
- * @property popularity Puntuación de popularidad
- * @property genres Lista de géneros
- * @property tagline Frase destacada (nullable)
- * @property overview Sinopsis (nullable)
- * @property first_air_date Fecha de estreno (nullable)
- * @property vote_average Puntuación media (0-10)
- * @property vote_count Total de votos
- * @property seasons Lista de temporadas (nullable)
- * @property origin_country Países de origen (nullable)
- * @property media_type Siempre "tv"
+ * Esta clase implementa MediaItem y añade propiedades especificas para series de TV
+ * como temporadas, paises de origen y fechas de estreno. Se utiliza para mostrar
+ * informacion detallada de series televisivas en la aplicacion.
+ *
+ * @property id Identificador unico de la serie en TMDB.
+ * @property name Nombre de la serie localizado segun el idioma de la aplicacion.
+ *               Puede ser nulo si no hay traduccion disponible.
+ * @property original_name Nombre original de la serie en su idioma nativo.
+ *                        Puede ser nulo en casos excepcionales.
+ * @property backdrop_path Ruta relativa a la imagen de fondo de alta resolucion.
+ * @property poster_path Ruta relativa al poster oficial de la serie.
+ * @property adult Indica si la serie tiene clasificacion para adultos.
+ * @property original_language Codigo ISO del idioma original de la serie.
+ * @property popularity indice de popularidad actual en TMDB.
+ * @property genres Lista de generos televisivos asociados.
+ * @property tagline Eslogan promocional de la serie.
+ * @property overview Sinopsis oficial de la serie.
+ * @property first_air_date Fecha de estreno del primer episodio en formato ISO (YYYY-MM-DD).
+ *                         Puede ser nula para series sin fecha confirmada.
+ * @property vote_average Puntuacion media de usuarios (0.0-10.0).
+ * @property vote_count Numero total de votos recibidos.
+ * @property seasons Lista completa de temporadas que componen la serie.
+ *                  Puede ser nula si no se solicita informacion detallada.
+ * @property origin_country Lista de codigos ISO de paises donde se produjo la serie.
+ *                         Puede ser nula si la informacion no esta disponible.
+ * @property media_type Siempre "tv" para instancias de esta clase.
+ *
+ * @see MediaItem
+ * @see Seasons
+ * @see Genero
  */
 data class TvShow(
     override val id: Int,

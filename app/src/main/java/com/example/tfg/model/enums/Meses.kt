@@ -1,11 +1,16 @@
 package com.example.tfg.model.enums
 
 /**
- * Enumeracion de meses del año con utilidades de conversion.
+ * Enumeracion de los meses del año con utilidades de conversion y localizacion.
  *
- * @property numMes Numero del mes (1-12)
- * @property abreviatura Abreviatura de 3 letras (ej: "Ene")
- * @property completo Nombre completo del mes
+ * Esta enumeracion proporciona una representacion completa de los meses del año
+ * con multiples formatos de presentacion, facilitando su uso en interfaces de usuario,
+ * filtros de fecha y operaciones de conversion. Especialmente util para mostrar
+ * fechas localizadas en español y para operaciones de parsing de fechas.
+ *
+ * @property numMes Numero ordinal del mes en el calendario gregoriano (1-12).
+ * @property abreviatura Forma abreviada del mes con 3 letras para interfaces compactas.
+ * @property completo Nombre completo del mes para uso en interfaces detalladas.
  */
 enum class Meses (val numMes: Int, val abreviatura: String, val completo: String) {
     ENERO(1, "Ene", "Enero"),
@@ -23,10 +28,17 @@ enum class Meses (val numMes: Int, val abreviatura: String, val completo: String
 
     companion object {
         /**
-         * Obtiene el mes correspondiente a un numero.
+         * Obtiene la instancia del mes correspondiente a un numero dado.
          *
-         * @param numMes Numero del mes (1-12)
-         * @return Mes correspondiente o null si no existe
+         * Metodo de conveniencia para convertir numeros de mes (como los obtenidos
+         * de fechas ISO o Calendar) a la representacion enum correspondiente.
+         * util para parsear fechas de la API de TMDB y mostrarlas localizadas.
+         *
+         * @param numMes Numero del mes en el rango 1-12 (enero=1, diciembre=12).
+         * @return La instancia de [Meses] correspondiente al numero dado,
+         *         o null si el numero esta fuera del rango valido.
+         *
+         * @throws IllegalArgumentException implicitamente si numMes < 1 || numMes > 12
          */
         fun fromNumero(numMes: Int): Meses? {
             return entries.find { it.numMes == numMes }

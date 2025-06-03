@@ -64,10 +64,6 @@ android {
 
 dependencies {
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.auth.ktx)
     implementation(libs.com.google.gms.google.services.gradle.plugin)
 
     implementation(libs.androidx.core.ktx)
@@ -82,6 +78,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.picasso.transformations)
     implementation(libs.androidx.palette)
+    implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

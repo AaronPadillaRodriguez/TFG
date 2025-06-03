@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#948f4e"
     android:fitsSystemWindows="true">
 
     <!--ScrollView que contiene tres layouts,
@@ -17,6 +18,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:backgroundTint="#ddd9b9"
             tools:context=".view.MainActivity">
 
             <include

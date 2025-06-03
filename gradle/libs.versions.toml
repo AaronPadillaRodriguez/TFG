@@ -21,6 +21,7 @@ comGoogleGmsGoogleServicesGradlePlugin = "4.4.2"
 playServicesBase = "18.7.0"
 picassoTransformations = "2.4.0"
 palette = "1.0.0"
+blurview = "version-2.0.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,7 @@ androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview"
 com-google-gms-google-services-gradle-plugin = { group = "com.google.gms.google-services", name = "com.google.gms.google-services.gradle.plugin", version.ref = "comGoogleGmsGoogleServicesGradlePlugin" }
 picasso-transformations = { group = "jp.wasabeef", name = "picasso-transformations", version.ref = "picassoTransformations" }
 androidx-palette = { group = "androidx.palette", name = "palette", version.ref = "palette" }
+blurview = { group = "com.github.Dimezis", name = "BlurView", version.ref = "blurview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
